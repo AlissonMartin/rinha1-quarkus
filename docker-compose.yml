@@ -1,0 +1,65 @@
+services:
+  api1: # API - Instância 01
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    hostname: api1
+    depends_on:
+      - db
+    expose:
+      - "80"
+    mem_limit: 800m
+    cpus: "0.4"
+    environment:
+      - SERVER_PORT=8081
+      - QUARKUS_PROFILE=dev
+      - QUARKUS_DATASOURCE_URL=jdbc:postgresql://localhost:5435/rinha1
+      - QUARKUS_DATASOURCE_USERNAME=postgres
+      - QUARKUS_DATASOURCE_PASSWORD=secret
+    network_mode: host
+
+  api2: # API - Instância 02
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    hostname: api2
+    depends_on:
+      - db
+    expose:
+      - "80"
+    mem_limit: 800m
+    cpus: "0.4"
+    environment:
+      - SERVER_PORT=8082
+      - QUARKUS_PROFILE=dev
+      - QUARKUS_DATASOURCE_URL=jdbc:postgresql://localhost:5435/rinha1
+      - QUARKUS_DATASOURCE_USERNAME=postgres
+      - QUARKUS_DATASOURCE_PASSWORD=secret
+    network_mode: host
+
+  nginx: # Load Balancer
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api1
+      - api2
+    mem_limit: 300m
+    cpus: "0.1"
+    network_mode: host
+
+  db: # Banco de dados
+    image: postgres:latest
+    mem_limit: 1100m
+    cpus: "0.60"
+    environment:
+      POSTGRES_DB: rinha1
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      PGPORT: 5435
+    network_mode: host
+    volumes:
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+
