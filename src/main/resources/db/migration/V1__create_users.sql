@@ -13,3 +13,4 @@ CREATE TABLE IF NOT EXISTS pessoas (
 );
 
 CREATE INDEX IF NOT EXISTS idx_pessoas_searcheable ON pessoas USING gist (concatsearch gist_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_pessoas_apelido ON pessoas (apelido);
